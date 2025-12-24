@@ -5,10 +5,12 @@ use std::{fs::read_to_string, path::Path};
 use crate::{
     day1::{parse_day1, sum_of_differences, sum_of_similarity_score},
     day2::{parse_day2, safe_qty},
+    day3::{mul_sum, mul_sum_conditional, parse_day3},
 };
 
 pub mod day1;
 pub mod day2;
+pub mod day3;
 
 fn get_lines(path: &Path) -> Vec<String> {
     read_to_string(path)
@@ -36,6 +38,15 @@ fn run_day2() {
     println!("Quantity of safe levels (stage 2): {num_safe}");
 }
 
+fn run_day3() {
+    let lines = get_lines(Path::new("input/day3_input.txt"));
+    let mul_stmts = parse_day3(&lines);
+    let total_sum = mul_sum(&mul_stmts);
+    println!("Total sum (stage 1): {total_sum}");
+    let total_sum = mul_sum_conditional(&mul_stmts);
+    println!("Total sum (stage 2): {total_sum}");
+}
+
 fn main() {
-    run_day2();
+    run_day3();
 }
