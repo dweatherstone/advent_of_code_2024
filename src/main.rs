@@ -7,12 +7,14 @@ use crate::{
     day2::{parse_day2, safe_qty},
     day3::{mul_sum, mul_sum_conditional, parse_day3},
     day4::{count_x_mas, count_xmas, parse_day4},
+    day5::{get_result_day5_stage1, get_result_day5_stage2, parse_day5},
 };
 
 pub mod day1;
 pub mod day2;
 pub mod day3;
 pub mod day4;
+pub mod day5;
 
 fn get_lines(path: &Path) -> Vec<String> {
     read_to_string(path)
@@ -58,6 +60,15 @@ fn run_day4() {
     println!("Total number of 'X-MAS' (stage 2): {x_mas_count}");
 }
 
+fn run_day5() {
+    let lines = get_lines(Path::new("input/day5_input.txt"));
+    let (ordering, updates) = parse_day5(&lines);
+    let result = get_result_day5_stage1(&ordering, &updates);
+    println!("Result day 5 (stage 1): {result}");
+    let result = get_result_day5_stage2(&ordering, &updates);
+    println!("Result day 5 (stage 2): {result}");
+}
+
 fn main() {
-    run_day4();
+    run_day5();
 }
