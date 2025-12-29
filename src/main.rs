@@ -6,11 +6,13 @@ use crate::{
     day1::{parse_day1, sum_of_differences, sum_of_similarity_score},
     day2::{parse_day2, safe_qty},
     day3::{mul_sum, mul_sum_conditional, parse_day3},
+    day4::{count_x_mas, count_xmas, parse_day4},
 };
 
 pub mod day1;
 pub mod day2;
 pub mod day3;
+pub mod day4;
 
 fn get_lines(path: &Path) -> Vec<String> {
     read_to_string(path)
@@ -47,6 +49,15 @@ fn run_day3() {
     println!("Total sum (stage 2): {total_sum}");
 }
 
+fn run_day4() {
+    let lines = get_lines(Path::new("input/day4_input.txt"));
+    let puzzle = parse_day4(&lines);
+    let xmas_count = count_xmas(&puzzle);
+    println!("Total number of 'XMAS' (stage 1): {xmas_count}");
+    let x_mas_count = count_x_mas(&puzzle);
+    println!("Total number of 'X-MAS' (stage 2): {x_mas_count}");
+}
+
 fn main() {
-    run_day3();
+    run_day4();
 }
