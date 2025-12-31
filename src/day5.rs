@@ -79,7 +79,7 @@ pub fn get_result_day5_stage2(ordering: &[PageOrdering], updates: &[Update]) -> 
 
     updates
         .iter()
-        .filter(|update| !is_update_valid(&rules_map, &update))
+        .filter(|update| !is_update_valid(&rules_map, update))
         .map(|update| topo_sort_update(&rules_map, update))
         .map(|pages| pages[pages.len() / 2])
         .sum()
@@ -96,10 +96,10 @@ fn is_update_valid(rules: &HashMap<u32, HashSet<u32>>, update: &Update) -> bool 
     for (&x, after_set) in rules {
         if let Some(&i_x) = index.get(&x) {
             for &y in after_set {
-                if let Some(&i_y) = index.get(&y) {
-                    if i_x >= i_y {
-                        return false;
-                    }
+                if let Some(&i_y) = index.get(&y)
+                    && i_x >= i_y
+                {
+                    return false;
                 }
             }
         }

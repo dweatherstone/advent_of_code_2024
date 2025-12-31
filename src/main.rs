@@ -76,6 +76,9 @@ fn run_day6() {
     let mut map = parse_day6(&lines);
     let result = map.patrol();
     println!("Result day 6 (stage 1): {result}");
+    let mut map = parse_day6(&lines);
+    let result = map.count_loop_positions();
+    println!("Result day 6 (stage 2): {result}");
 }
 
 fn main() {
