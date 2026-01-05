@@ -10,6 +10,7 @@ use crate::{
     day5::{get_result_day5_stage1, get_result_day5_stage2, parse_day5},
     day6::parse_day6,
     day7::{get_result_day7_stage1, get_result_day7_stage2, parse_day7},
+    day8::parse_day8,
 };
 
 pub mod day1;
@@ -19,6 +20,7 @@ pub mod day4;
 pub mod day5;
 pub mod day6;
 pub mod day7;
+pub mod day8;
 
 fn get_lines(path: &Path) -> Vec<String> {
     read_to_string(path)
@@ -89,9 +91,18 @@ fn run_day7() {
     let result = get_result_day7_stage1(&equations);
     println!("Result day 7 (stage 1): {result}");
     let result = get_result_day7_stage2(&equations);
-    println!("Result day 5 (stage 2): {result}");
+    println!("Result day 7 (stage 2): {result}");
+}
+
+fn run_day8() {
+    let lines = get_lines(Path::new("input/day8_input.txt"));
+    let map = parse_day8(&lines);
+    let result = map.get_antinodes_stage1();
+    println!("Result day 8 (stage 1): {result}");
+    let result = map.get_antinodes_stage2();
+    println!("Result day 8 (stage 2): {result}");
 }
 
 fn main() {
-    run_day7();
+    run_day8();
 }
