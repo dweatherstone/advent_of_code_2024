@@ -12,9 +12,11 @@ use crate::{
     day7::{get_result_day7_stage1, get_result_day7_stage2, parse_day7},
     day8::parse_day8,
     day9::{defrag, defrag_stage2, get_checksum, parse_day9},
+    day10::parse_day10,
 };
 
 pub mod day1;
+pub mod day10;
 pub mod day2;
 pub mod day3;
 pub mod day4;
@@ -116,6 +118,15 @@ fn run_day9() {
     println!("Result day 9 (stage 2): {checksum}");
 }
 
+fn run_day10() {
+    let lines = get_lines(Path::new("input/day10_input.txt"));
+    let map = parse_day10(&lines);
+    let score = map.get_score_stage1();
+    println!("Result day 10 (stage 1): {score}");
+    let rating = map.get_rating_stage2();
+    println!("Result day 10 (stage 2): {rating}");
+}
+
 fn main() {
-    run_day9();
+    run_day10();
 }
