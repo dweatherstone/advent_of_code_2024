@@ -11,6 +11,7 @@ use crate::{
     day6::parse_day6,
     day7::{get_result_day7_stage1, get_result_day7_stage2, parse_day7},
     day8::parse_day8,
+    day9::{defrag, defrag_stage2, get_checksum, parse_day9},
 };
 
 pub mod day1;
@@ -21,6 +22,7 @@ pub mod day5;
 pub mod day6;
 pub mod day7;
 pub mod day8;
+pub mod day9;
 
 fn get_lines(path: &Path) -> Vec<String> {
     read_to_string(path)
@@ -103,6 +105,17 @@ fn run_day8() {
     println!("Result day 8 (stage 2): {result}");
 }
 
+fn run_day9() {
+    let lines = get_lines(Path::new("input/day9_input.txt"));
+    let filesystem = parse_day9(&lines);
+    // let defragged = defrag(&filesystem);
+    // let checksum = get_checksum(&defragged);
+    // println!("Result day 9 (stage 1): {checksum}");
+    let defragged = defrag_stage2(&filesystem);
+    let checksum = get_checksum(&defragged);
+    println!("Result day 9 (stage 2): {checksum}");
+}
+
 fn main() {
-    run_day8();
+    run_day9();
 }
