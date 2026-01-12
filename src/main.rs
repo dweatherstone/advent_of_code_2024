@@ -13,7 +13,7 @@ use crate::{
     day8::parse_day8,
     day9::{defrag, defrag_stage2, get_checksum, parse_day9},
     day10::parse_day10,
-    day11::{number_of_stones, number_of_stones2, parse_day11},
+    day11::{number_of_stones, parse_day11},
 };
 
 pub mod day1;
@@ -134,7 +134,7 @@ fn run_day11() {
     let stones = parse_day11(&lines);
     let stone_count = number_of_stones(&stones, 25);
     println!("Result day 11 (stage 1): {stone_count}");
-    let stone_count = number_of_stones2(&stones, 75);
+    let stone_count = number_of_stones(&stones, 75);
     println!("Result day 11 (stage 2): {stone_count}");
 }
 
