@@ -155,6 +155,8 @@ fn run_day12() {
     // }
     let stage1 = day12::stage1_result(&regions);
     println!("Result day 12 (stage 1): {stage1}");
+    let stage2 = day12::stage2_result(&regions);
+    println!("Result day 12 (stage 2): {stage2}");
 }
 
 fn main() {

@@ -1,5 +1,7 @@
 use std::{collections::HashSet, fmt::Display};
 
+use strum::{EnumIter, IntoEnumIterator};
+
 pub struct GardenRegion {
     plots: Vec<Coord>,
     plot_set: HashSet<Coord>,
@@ -15,7 +17,7 @@ impl GardenRegion {
         self.plot_set.len()
     }
 
-    pub fn perimeter(&self) -> usize {
+    fn perimeter(&self) -> usize {
         let directions = [(-1, 0), (1, 0), (0, -1), (0, 1)];
         let mut perimeter = 0;
 
@@ -30,14 +32,41 @@ impl GardenRegion {
         perimeter
     }
 
-    fn price(&self) -> usize {
+    fn sides(&self) -> usize {
+        let edges = self.boundary_edges();
+        count_sides(&edges)
+    }
+
+    fn boundary_edges(&self) -> Vec<Edge> {
+        // iterate plots
+        // for each plot, check 4 neighbours
+        // if neighbour not in plot_set -> add Edge
+        let mut edges = Vec::new();
+        for &(r, c) in self.plots.iter() {
+            for dir in EdgeDir::iter() {
+                let (dr, dc) = dir.direction();
+                let new_cell = (r + dr, c + dc);
+                if self.plot_set.contains(&new_cell) {
+                    continue;
+                }
+                edges.push(Edge { cell: (r, c), dir });
+            }
+        }
+        edges
+    }
+
+    fn price_perimeter(&self) -> usize {
         self.area() * self.perimeter()
+    }
+
+    fn price_sides(&self) -> usize {
+        self.area() * self.sides()
     }
 }
 
 impl Display for GardenRegion {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Plot Set = {:?}", self.plot_set)
+        write!(f, "Plots = {:?}", self.plots)
     }
 }
 
@@ -68,7 +97,11 @@ pub fn find_regions(grid: &[Vec<char>]) -> Vec<GardenRegion> {
 }
 
 pub fn stage1_result(regions: &[GardenRegion]) -> usize {
-    regions.iter().map(|region| region.price()).sum()
+    regions.iter().map(|region| region.price_perimeter()).sum()
+}
+
+pub fn stage2_result(regions: &[GardenRegion]) -> usize {
+    regions.iter().map(|region| region.price_sides()).sum()
 }
 
 fn flood_fill(grid: &[Vec<char>], start: Coord, visited: &mut HashSet<Coord>) -> GardenRegion {
@@ -83,7 +116,7 @@ fn flood_fill(grid: &[Vec<char>], start: Coord, visited: &mut HashSet<Coord>) ->
 
         for (dr, dc) in directions {
             let next = (r + dr, c + dc);
-            // Is `next`` inside the grid?
+            // Is `next` inside the grid?
             if next.0 < 0
                 || next.1 < 0
                 || next.0 as usize >= grid.len()
@@ -104,6 +137,56 @@ fn flood_fill(grid: &[Vec<char>], start: Coord, visited: &mut HashSet<Coord>) ->
         }
     }
     GardenRegion::new(plots)
+}
+
+#[derive(EnumIter, Clone, Copy, PartialEq, Eq, Hash)]
+enum EdgeDir {
+    North,
+    South,
+    East,
+    West,
+}
+
+impl EdgeDir {
+    const fn direction(&self) -> (isize, isize) {
+        match self {
+            EdgeDir::North => (-1, 0),
+            EdgeDir::South => (1, 0),
+            EdgeDir::East => (0, -1),
+            EdgeDir::West => (0, 1),
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+struct Edge {
+    cell: Coord,
+    dir: EdgeDir,
+}
+
+fn count_sides(edges: &[Edge]) -> usize {
+    // group edges by direction
+    // count straight runs in each group
+    let edge_set: HashSet<Edge> = HashSet::from_iter(edges.iter().cloned());
+    edge_set
+        .iter()
+        .filter(|&edge| starts_new_side(edge, &edge_set))
+        .count()
+}
+
+fn starts_new_side(edge: &Edge, edge_set: &HashSet<Edge>) -> bool {
+    // based on direction:
+    // check if a "previous" edge exists
+    let (dr, dc) = match edge.dir {
+        EdgeDir::North | EdgeDir::South => (0, -1), // check left
+        EdgeDir::East | EdgeDir::West => (-1, 0),   // check up
+    };
+    let prev_cell = (edge.cell.0 + dr, edge.cell.1 + dc);
+    let prev_edge = Edge {
+        cell: prev_cell,
+        dir: edge.dir,
+    };
+    !edge_set.contains(&prev_edge)
 }
 
 type Coord = (isize, isize);
@@ -146,6 +229,17 @@ mod day12 {
         ]
     }
 
+    fn example4_lines() -> Vec<String> {
+        vec![
+            String::from("AAAAAA"),
+            String::from("AAABBA"),
+            String::from("AAABBA"),
+            String::from("ABBAAA"),
+            String::from("ABBAAA"),
+            String::from("AAAAAA"),
+        ]
+    }
+
     #[test]
     fn example1_perimeter() {
         let grid = parse_grid(&example1_lines());
@@ -180,5 +274,37 @@ mod day12 {
         let regions = find_regions(&grid);
         let result = stage1_result(&regions);
         assert_eq!(result, 1930);
+    }
+
+    #[test]
+    fn example1_stage2() {
+        let grid = parse_grid(&example1_lines());
+        let regions = find_regions(&grid);
+        let result = stage2_result(&regions);
+        assert_eq!(result, 80);
+    }
+
+    #[test]
+    fn example2_stage2() {
+        let grid = parse_grid(&example2_lines());
+        let regions = find_regions(&grid);
+        let result = stage2_result(&regions);
+        assert_eq!(result, 436);
+    }
+
+    #[test]
+    fn example3_stage2() {
+        let grid = parse_grid(&example3_lines());
+        let regions = find_regions(&grid);
+        let result = stage2_result(&regions);
+        assert_eq!(result, 1206);
+    }
+
+    #[test]
+    fn example4_stage2() {
+        let grid = parse_grid(&example4_lines());
+        let regions = find_regions(&grid);
+        let result = stage2_result(&regions);
+        assert_eq!(result, 368);
     }
 }
