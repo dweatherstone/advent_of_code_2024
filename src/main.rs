@@ -19,6 +19,7 @@ use crate::{
 pub mod day1;
 pub mod day10;
 pub mod day11;
+pub mod day12;
 pub mod day2;
 pub mod day3;
 pub mod day4;
@@ -138,6 +139,24 @@ fn run_day11() {
     println!("Result day 11 (stage 2): {stone_count}");
 }
 
+fn run_day12() {
+    let lines = get_lines(Path::new("input/day12_input.txt"));
+    // let lines = vec![
+    //     String::from("AAAA"),
+    //     String::from("BBCD"),
+    //     String::from("BBCC"),
+    //     String::from("EEEC"),
+    // ];
+    let grid = day12::parse_grid(&lines);
+    let regions = day12::find_regions(&grid);
+    // for region in regions.iter() {
+    //     println!("{region}");
+    //     println!("Perimeter = {}", region.perimeter());
+    // }
+    let stage1 = day12::stage1_result(&regions);
+    println!("Result day 12 (stage 1): {stage1}");
+}
+
 fn main() {
-    run_day11();
+    run_day12();
 }
