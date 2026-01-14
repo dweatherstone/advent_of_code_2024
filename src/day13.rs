@@ -29,7 +29,24 @@ impl Machine {
     }
 
     fn get_tokens_stage2(&self) -> Option<i128> {
-        todo!()
+        let (ax, ay) = self.button_a;
+        let (bx, by) = self.button_b;
+        let (cx, cy) = self.prize;
+        let det = (ax * by) - (ay * bx);
+        if det == 0 {
+            return None;
+        }
+        let det_x = (cx * by) - (cy * bx);
+        let det_y = (ax * cy) - (ay * cx);
+        if det_x % det != 0 || det_y % det != 0 {
+            return None;
+        }
+        let x = det_x / det;
+        let y = det_y / det;
+        if x < 0 || y < 0 {
+            return None;
+        }
+        Some(3 * x + y)
     }
 }
 
@@ -85,7 +102,7 @@ pub fn get_result_day13_stage1(machines: &[Machine]) -> i128 {
 }
 
 pub fn get_result_day13_stage2(machines: &mut [Machine]) -> i128 {
-    machines.iter_mut().map(|machine| {
+    machines.iter_mut().for_each(|machine| {
         machine.prize.0 += 10000000000000;
         machine.prize.1 += 10000000000000;
     });

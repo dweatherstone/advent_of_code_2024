@@ -85,3 +85,7 @@ Using the corrected prize coordinates, figure out how to win as many prizes as p
 ### Notes
 
 For part 2, you cannot use the brute force method. We need to use some linear algebra; namely [Cramer's Rule](https://en.wikipedia.org/wiki/Cramer%27s_rule). There is a nice [python implementation](https://kitfucoda.medium.com/applying-cramers-rule-for-advent-of-code-2024-day-13-3b5ec201a307) that could be adapted perhaps?
+
+### Final Answer
+
+Your puzzle answer was `98080815200063`.
