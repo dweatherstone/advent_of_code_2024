@@ -14,12 +14,14 @@ use crate::{
     day9::{defrag, defrag_stage2, get_checksum, parse_day9},
     day10::parse_day10,
     day11::{number_of_stones, parse_day11},
+    day13::{get_result_day13_stage1, parse_day13},
 };
 
 pub mod day1;
 pub mod day10;
 pub mod day11;
 pub mod day12;
+pub mod day13;
 pub mod day2;
 pub mod day3;
 pub mod day4;
@@ -159,6 +161,12 @@ fn run_day12() {
     println!("Result day 12 (stage 2): {stage2}");
 }
 
+fn run_day13() {
+    let machines = parse_day13(&get_lines(Path::new("input/day13_input.txt")));
+    let stage1 = get_result_day13_stage1(&machines);
+    println!("Result day 13 (stage 1): {stage1}");
+}
+
 fn main() {
-    run_day12();
+    run_day13();
 }
