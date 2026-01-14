@@ -30,16 +30,14 @@ pub fn parse_day9(lines: &[String]) -> Vec<Option<u32>> {
 
 pub fn defrag(filesystem: &[Option<u32>]) -> Vec<Option<u32>> {
     let mut defragged: Vec<Option<u32>> = filesystem.to_vec();
-    for file_id in filesystem.iter().rev() {
-        if let Some(id) = file_id {
-            // Set the first empty cell with this id
-            if let Some(slot) = defragged.iter_mut().find(|x| x.is_none()) {
-                *slot = Some(*id);
-            }
-            // Set the last filled cell as empty
-            if let Some(slot) = defragged.iter_mut().rev().find(|x| x.is_some()) {
-                *slot = None;
-            }
+    for id in filesystem.iter().rev().flatten() {
+        // Set the first empty cell with this id
+        if let Some(slot) = defragged.iter_mut().find(|x| x.is_none()) {
+            *slot = Some(*id);
+        }
+        // Set the last filled cell as empty
+        if let Some(slot) = defragged.iter_mut().rev().find(|x| x.is_some()) {
+            *slot = None;
         }
     }
     defragged
@@ -82,8 +80,8 @@ pub fn defrag_stage2(filesystem: &[Option<u32>]) -> Vec<Option<u32>> {
 
 fn find_none_run(fs: &[Option<u32>], needed: usize, limit: usize) -> Option<usize> {
     let mut count = 0;
-    for i in 0..limit.min(fs.len()) {
-        if fs[i].is_none() {
+    for (i, item) in fs.iter().enumerate().take(limit.min(fs.len())) {
+        if item.is_none() {
             count += 1;
             if count == needed {
                 return Some(i + 1 - needed);
@@ -100,11 +98,12 @@ pub fn get_checksum(filesystem: &[Option<u32>]) -> u64 {
         .iter()
         .enumerate()
         .filter_map(|(idx, file_id)| {
-            if let Some(id) = file_id {
-                Some(idx as u64 * *id as u64)
-            } else {
-                None
-            }
+            // if let Some(id) = file_id {
+            //     Some(idx as u64 * *id as u64)
+            // } else {
+            //     None
+            // }
+            file_id.as_ref().map(|&id| idx as u64 * id as u64)
         })
         .sum()
 }

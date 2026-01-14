@@ -25,7 +25,7 @@ pub fn number_of_stones(stones: &[String], n: usize) -> u64 {
                 *next.entry(1).or_insert(0) += count;
             } else {
                 let d = digits(value);
-                if d % 2 == 0 {
+                if d.is_multiple_of(2) {
                     let (a, b) = split(value, d);
                     *next.entry(a).or_insert(0) += count;
                     *next.entry(b).or_insert(0) += count;

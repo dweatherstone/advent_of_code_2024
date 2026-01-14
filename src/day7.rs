@@ -1,4 +1,4 @@
-use std::{fmt, iter::repeat};
+use std::{fmt, iter::repeat_n};
 
 use itertools::Itertools;
 
@@ -26,10 +26,7 @@ impl Equation {
             vec![Operator::Addition, Operator::Multiplication]
         };
 
-        for ops in repeat(operator_options)
-            .take(slots)
-            .multi_cartesian_product()
-        {
+        for ops in repeat_n(operator_options, slots).multi_cartesian_product() {
             let mut total = self.operands[0];
             for (i, &b) in self.operands.iter().skip(1).enumerate() {
                 total = ops[i].calculate(total, b);
