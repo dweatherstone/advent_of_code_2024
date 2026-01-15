@@ -15,6 +15,7 @@ use crate::{
     day10::parse_day10,
     day11::{number_of_stones, parse_day11},
     day13::{get_result_day13_stage1, get_result_day13_stage2, parse_day13},
+    day14::{get_result_day14_stage1, parse_day14},
 };
 
 pub mod day1;
@@ -22,6 +23,7 @@ pub mod day10;
 pub mod day11;
 pub mod day12;
 pub mod day13;
+pub mod day14;
 pub mod day2;
 pub mod day3;
 pub mod day4;
@@ -143,18 +145,8 @@ fn run_day11() {
 
 fn run_day12() {
     let lines = get_lines(Path::new("input/day12_input.txt"));
-    // let lines = vec![
-    //     String::from("AAAA"),
-    //     String::from("BBCD"),
-    //     String::from("BBCC"),
-    //     String::from("EEEC"),
-    // ];
     let grid = day12::parse_grid(&lines);
     let regions = day12::find_regions(&grid);
-    // for region in regions.iter() {
-    //     println!("{region}");
-    //     println!("Perimeter = {}", region.perimeter());
-    // }
     let stage1 = day12::stage1_result(&regions);
     println!("Result day 12 (stage 1): {stage1}");
     let stage2 = day12::stage2_result(&regions);
@@ -169,6 +161,35 @@ fn run_day13() {
     println!("Result day 13 (stage 2): {stage2}");
 }
 
+fn test_day14() {
+    let lines = vec![
+        String::from("p=0,4 v=3,-3"),
+        String::from("p=6,3 v=-1,-3"),
+        String::from("p=10,3 v=-1,2"),
+        String::from("p=2,0 v=2,-1"),
+        String::from("p=0,0 v=1,3"),
+        String::from("p=3,0 v=-2,-2"),
+        String::from("p=7,6 v=-1,-3"),
+        String::from("p=3,0 v=-1,-2"),
+        String::from("p=9,3 v=2,3"),
+        String::from("p=7,3 v=-1,2"),
+        String::from("p=2,4 v=2,-3"),
+        String::from("p=9,5 v=-3,-3"),
+    ];
+    let mut floorplan = parse_day14(&lines, (11, 7));
+    println!("Initial:");
+    println!("{floorplan}");
+    floorplan.move_robots(100);
+    println!("After 100 seconds:");
+    println!("{floorplan}");
+}
+
+fn run_day14() {
+    let mut floorplan = parse_day14(&get_lines(Path::new("input/day14_input.txt")), (101, 103));
+    let stage1 = get_result_day14_stage1(&mut floorplan, 100);
+    println!("Result day 14 (stage 1): {stage1}");
+}
+
 fn main() {
-    run_day13();
+    run_day14();
 }
