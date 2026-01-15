@@ -133,8 +133,14 @@ To begin, [get your puzzle input](https://adventofcode.com/2024/day/14/input).
 
 ## Part One Notes
 
-We must look at the `Coord` type and make sure that we use `x` and `y` rather than rows and columns. That means that any comparisons or edge cases need to make sure that they are comparing to the correct maximum values.
+~~We must look at the `Coord` type and make sure that we use `x` and `y` rather than rows and columns. That means that any comparisons or edge cases need to make sure that they are comparing to the correct maximum values.~~
 
-This might be best calculated by creating a nice representation of the `Floorplan` via and implmentation of [`Display`](https://doc.rust-lang.org/std/fmt/trait.Display.html).
+~~This might be best calculated by creating a nice representation of the `Floorplan` via and implmentation of [`Display`](https://doc.rust-lang.org/std/fmt/trait.Display.html).~~
 
 ~~Also, what is the best datatype to use. As all of these coords and vectors are added together and compared, best to use the same datatypes - probably `i32` or `i64`.~~
+
+## Part Two
+
+During the bathroom break, someone notices that these robots seem awfully similar to ones built and used at the North Pole. If they're the same type of robots, they should have a hard-coded Easter egg: very rarely, most of the robots should arrange themselves into **a picture of a Christmas tree**.
+
+**What is the fewest number of seconds that must elapse for the robots to display the Easter egg?**

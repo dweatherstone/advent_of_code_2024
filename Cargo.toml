@@ -7,3 +7,4 @@ edition = "2024"
 itertools = "0.14.0"
 regex = "1.12.2"
 strum = { version = "0.27.2", features = ["derive"] }
+getch = "0.3.1"

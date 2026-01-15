@@ -1,5 +1,11 @@
-use std::{collections::HashMap, fmt::Display, num::Wrapping};
+use std::{
+    collections::HashMap,
+    fmt::Display,
+    io::{Read, stdin},
+    os::unix::io::AsRawFd,
+};
 
+use getch::Getch;
 use strum::{EnumIter, IntoEnumIterator};
 
 type Coord = (i64, i64);
@@ -62,6 +68,36 @@ impl Floorplan {
                 } else {
                     None
                 }
+            })
+            .sum()
+    }
+
+    fn clustering_score(&self) -> f64 {
+        if self.occupied.is_empty() {
+            return 0.0;
+        }
+
+        // Compute weighted centroid
+        let (sum_x, sum_y, total_count) =
+            self.occupied
+                .iter()
+                .fold((0.0, 0.0, 0.0), |(sx, sy, sc), (&(x, y), &count)| {
+                    (
+                        sx + x as f64 * count as f64,
+                        sy + y as f64 * count as f64,
+                        sc + count as f64,
+                    )
+                });
+        let centroid_x = sum_x / total_count;
+        let centroid_y = sum_y / total_count;
+
+        // Compare weighted sum of squared distances to centroid
+        self.occupied
+            .iter()
+            .map(|(&(x, y), &count)| {
+                let dx = x as f64 - centroid_x;
+                let dy = y as f64 - centroid_y;
+                (dx * dx + dy * dy) * count as f64
             })
             .sum()
     }
@@ -137,6 +173,32 @@ pub fn get_result_day14_stage1(floorplan: &mut Floorplan, n: i64) -> u64 {
         .product()
 }
 
+pub fn get_result_day14_stage2(floorplan: &mut Floorplan) {
+    let mut best_score: f64 = f64::MAX;
+
+    for t in 1..=100_000 {
+        floorplan.move_robots(1);
+        let score = floorplan.clustering_score();
+
+        if score < best_score {
+            best_score = score;
+
+            println!("Iteration: {t}");
+            println!("Clustering Score: {best_score}");
+            println!("{floorplan}");
+
+            println!("Press 'q' to quit, any other key to continue...");
+            let c = wait_for_key();
+            if c == 'q' {
+                return; // Exit the function if 'q' is pressed
+            }
+        }
+    }
+}
+
+fn wait_for_key() -> char {
+    getch::Getch::new().getch().unwrap() as char
+}
 #[cfg(test)]
 mod day14 {
     use super::*;

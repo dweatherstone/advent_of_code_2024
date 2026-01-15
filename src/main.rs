@@ -15,7 +15,7 @@ use crate::{
     day10::parse_day10,
     day11::{number_of_stones, parse_day11},
     day13::{get_result_day13_stage1, get_result_day13_stage2, parse_day13},
-    day14::{get_result_day14_stage1, parse_day14},
+    day14::{get_result_day14_stage1, get_result_day14_stage2, parse_day14},
 };
 
 pub mod day1;
@@ -186,8 +186,9 @@ fn test_day14() {
 
 fn run_day14() {
     let mut floorplan = parse_day14(&get_lines(Path::new("input/day14_input.txt")), (101, 103));
-    let stage1 = get_result_day14_stage1(&mut floorplan, 100);
-    println!("Result day 14 (stage 1): {stage1}");
+    // let stage1 = get_result_day14_stage1(&mut floorplan, 100);
+    // println!("Result day 14 (stage 1): {stage1}");
+    get_result_day14_stage2(&mut floorplan);
 }
 
 fn main() {
