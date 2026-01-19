@@ -195,11 +195,30 @@ fn run_day14() {
 
 fn run_day15() {
     let mut warehouse = parse_day15(&get_lines(Path::new("input/day15_input.txt")));
+    warehouse.make_wider();
     warehouse.make_moves(false);
     let gps = warehouse.get_gps_sum();
-    println!("Result day 15 (stage 1): {gps}");
+    println!("Result day 15 (stage 2): {gps}");
 }
 
 fn main() {
     run_day15();
+    // let lines = vec![
+    //     String::from("#######"),
+    //     String::from("#...#.#"),
+    //     String::from("#.....#"),
+    //     String::from("#..OO@#"),
+    //     String::from("#..O..#"),
+    //     String::from("#.....#"),
+    //     String::from("#######"),
+    //     String::from(""),
+    //     String::from("<vv<<^^<<^^"),
+    // ];
+
+    // let mut warehouse = parse_day15(&lines);
+    // println!("Before widening:\n{warehouse}");
+    // warehouse.make_wider();
+    // println!("\nAfter widening:\n{warehouse}");
+    // println!();
+    // warehouse.make_moves(true);
 }
