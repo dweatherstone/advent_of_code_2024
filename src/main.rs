@@ -16,6 +16,7 @@ use crate::{
     day11::{number_of_stones, parse_day11},
     day13::{get_result_day13_stage1, get_result_day13_stage2, parse_day13},
     day14::{get_result_day14_stage1, get_result_day14_stage2, parse_day14},
+    day15::parse_day15,
 };
 
 pub mod day1;
@@ -24,6 +25,7 @@ pub mod day11;
 pub mod day12;
 pub mod day13;
 pub mod day14;
+pub mod day15;
 pub mod day2;
 pub mod day3;
 pub mod day4;
@@ -191,6 +193,13 @@ fn run_day14() {
     get_result_day14_stage2(&mut floorplan);
 }
 
+fn run_day15() {
+    let mut warehouse = parse_day15(&get_lines(Path::new("input/day15_input.txt")));
+    warehouse.make_moves(false);
+    let gps = warehouse.get_gps_sum();
+    println!("Result day 15 (stage 1): {gps}");
+}
+
 fn main() {
-    run_day14();
+    run_day15();
 }
