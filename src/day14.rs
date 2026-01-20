@@ -2,7 +2,6 @@ use std::{
     collections::HashMap,
     fmt::Display,
     io::{Read, stdin},
-    os::unix::io::AsRawFd,
 };
 
 use getch::Getch;

@@ -17,6 +17,7 @@ use crate::{
     day13::{get_result_day13_stage1, get_result_day13_stage2, parse_day13},
     day14::{get_result_day14_stage1, get_result_day14_stage2, parse_day14},
     day15::parse_day15,
+    day16::{get_score_day16_stage1, parse_day16},
 };
 
 pub mod day1;
@@ -26,6 +27,7 @@ pub mod day12;
 pub mod day13;
 pub mod day14;
 pub mod day15;
+pub mod day16;
 pub mod day2;
 pub mod day3;
 pub mod day4;
@@ -201,24 +203,12 @@ fn run_day15() {
     println!("Result day 15 (stage 2): {gps}");
 }
 
-fn main() {
-    run_day15();
-    // let lines = vec![
-    //     String::from("#######"),
-    //     String::from("#...#.#"),
-    //     String::from("#.....#"),
-    //     String::from("#..OO@#"),
-    //     String::from("#..O..#"),
-    //     String::from("#.....#"),
-    //     String::from("#######"),
-    //     String::from(""),
-    //     String::from("<vv<<^^<<^^"),
-    // ];
+fn run_day16() {
+    let grid = parse_day16(&get_lines(Path::new("input/day16_input.txt")));
+    let points = get_score_day16_stage1(&grid);
+    println!("Result day 16 (stage 1): {points}");
+}
 
-    // let mut warehouse = parse_day15(&lines);
-    // println!("Before widening:\n{warehouse}");
-    // warehouse.make_wider();
-    // println!("\nAfter widening:\n{warehouse}");
-    // println!();
-    // warehouse.make_moves(true);
+fn main() {
+    run_day16();
 }
