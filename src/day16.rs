@@ -1,14 +1,47 @@
 use std::{
-    cmp::{Ordering, Reverse},
-    collections::{BinaryHeap, HashMap},
+    cmp::Ordering,
+    collections::{BinaryHeap, HashMap, HashSet},
 };
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Grid {
+    walls: Vec<Vec<bool>>,
+    height: usize,
+    width: usize,
+    start: (usize, usize),
+    end: (usize, usize),
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum Direction {
     North,
     South,
     East,
     West,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+struct Node {
+    row: usize,
+    col: usize,
+    dir: Direction,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+struct HeapItem {
+    cost: u64,
+    node: Node,
+}
+
+impl Ord for HeapItem {
+    fn cmp(&self, other: &Self) -> Ordering {
+        other.cost.cmp(&self.cost)
+    }
+}
+
+impl PartialOrd for HeapItem {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
 }
 
 impl Direction {
@@ -40,39 +73,6 @@ impl Direction {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-struct State {
-    row: usize,
-    col: usize,
-    direction: Direction,
-    cost: u64,
-}
-
-impl Ord for State {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.cost
-            .cmp(&other.cost)
-            // Reverse tie-breakers so heap ordering stays stable
-            .then_with(|| self.row.cmp(&other.row))
-            .then_with(|| self.col.cmp(&other.col))
-            .then_with(|| self.direction.cmp(&other.direction))
-    }
-}
-
-impl PartialOrd for State {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-pub struct Grid {
-    walls: Vec<Vec<bool>>,
-    height: usize,
-    width: usize,
-    start: (usize, usize),
-    end: (usize, usize),
-}
-
 pub fn parse_day16(lines: &[String]) -> Grid {
     let height = lines.len();
     let width = lines[0].len();
@@ -100,64 +100,146 @@ pub fn parse_day16(lines: &[String]) -> Grid {
 }
 
 pub fn get_score_day16_stage1(grid: &Grid) -> u64 {
-    let mut heap = BinaryHeap::new();
+    let dist = dijkstra(grid, true);
 
-    // Distance map: best known cost to reach a given state
-    let mut dist: HashMap<(usize, usize, Direction), u64> = HashMap::new();
+    dist.iter()
+        .filter_map(|(&node, &cost)| {
+            if (node.row, node.col) == grid.end {
+                Some(cost)
+            } else {
+                None
+            }
+        })
+        .min()
+        .unwrap()
+}
 
-    // Initialise: starting position and direction (East as specified in the problem)
-    let state = State {
-        row: grid.start.0,
-        col: grid.start.1,
-        direction: Direction::East,
-        cost: 0,
-    };
-    dist.insert((grid.start.0, grid.start.1, Direction::East), 0);
-    heap.push(Reverse(state));
+pub fn get_seats_day16_stage2(grid: &Grid) -> usize {
+    let dist = dijkstra(grid, false);
 
-    while let Some(Reverse(state)) = heap.pop() {
-        let State {
-            row,
-            col,
-            direction,
-            cost,
-        } = state;
-        // If we reached the end, this is the minimum cost
-        if (row, col) == grid.end {
-            return cost;
-        }
+    let best_end_cost = dist
+        .iter()
+        .filter_map(|(&node, &cost)| {
+            if (node.row, node.col) == grid.end {
+                Some(cost)
+            } else {
+                None
+            }
+        })
+        .min()
+        .unwrap();
 
-        // Ignore stale entries
-        if cost > *dist.get(&(row, col, direction)).unwrap() {
+    let mut queue: Vec<Node> = dist
+        .iter()
+        .filter_map(|(&node, &cost)| {
+            if (node.row, node.col) == grid.end && cost == best_end_cost {
+                Some(node)
+            } else {
+                None
+            }
+        })
+        .collect();
+    let mut visited: HashSet<Node> = HashSet::new();
+    let mut tiles: HashSet<(usize, usize)> = HashSet::new();
+
+    while let Some(node) = queue.pop() {
+        if !visited.insert(node) {
             continue;
         }
+        tiles.insert((node.row, node.col));
+        let curr_cost = dist[&node];
 
-        // Generate neighbours
-        for (next_dir, step_cost) in neighbours(&direction) {
-            if let Some((nr, nc)) = step(row, col, &next_dir, grid) {
-                let next_cost = cost + step_cost;
+        let (dr, dc) = node.dir.delta();
+        let pr = match node.row.checked_sub_signed(dr) {
+            Some(v) => v,
+            None => continue,
+        };
+        let pc = match node.col.checked_sub_signed(dc) {
+            Some(v) => v,
+            None => continue,
+        };
 
-                let key = (nr, nc, next_dir);
-                let best = dist.get(&key).copied().unwrap_or(u64::MAX);
-
-                if next_cost < best {
-                    dist.insert(key, next_cost);
-                    heap.push(Reverse(State {
-                        row: nr,
-                        col: nc,
-                        direction: next_dir,
-                        cost: next_cost,
-                    }));
-                }
+        for (pd, step_cost) in predecessor_moves(&node.dir) {
+            let prev = Node {
+                row: pr,
+                col: pc,
+                dir: pd,
+            };
+            if let Some(&prev_cost) = dist.get(&prev)
+                && prev_cost + step_cost == curr_cost
+            {
+                queue.push(prev);
             }
         }
     }
 
-    panic!("No path the end");
+    tiles.len()
+}
+
+fn dijkstra(grid: &Grid, stop_at_end: bool) -> HashMap<Node, u64> {
+    let mut heap: BinaryHeap<HeapItem> = BinaryHeap::new();
+
+    // Distance map: best known cost to reach a given state
+    let mut dist: HashMap<Node, u64> = HashMap::new();
+
+    let start_node = Node {
+        row: grid.start.0,
+        col: grid.start.1,
+        dir: Direction::East,
+    };
+
+    dist.insert(start_node, 0);
+    heap.push(HeapItem {
+        cost: 0,
+        node: start_node,
+    });
+
+    while let Some(HeapItem { cost, node }) = heap.pop() {
+        // Ignore stale entries
+        if cost > dist[&node] {
+            continue;
+        }
+
+        // Safe because the first time we pop an end node, its cost is minimal
+        if stop_at_end && (node.row, node.col) == grid.end {
+            break;
+        }
+
+        // Generate neighbours
+        for (next_dir, step_cost) in neighbours(&node.dir) {
+            if let Some((nr, nc)) = step(node.row, node.col, &next_dir, grid) {
+                let next_cost = cost + step_cost;
+
+                let key = Node {
+                    row: nr,
+                    col: nc,
+                    dir: next_dir,
+                };
+
+                if next_cost < dist.get(&key).copied().unwrap_or(u64::MAX) {
+                    dist.insert(key, next_cost);
+                    heap.push(HeapItem {
+                        cost: next_cost,
+                        node: key,
+                    });
+                }
+            }
+        }
+    }
+    dist
 }
 
 fn neighbours(dir: &Direction) -> impl Iterator<Item = (Direction, u64)> {
     [(*dir, 1), (dir.turn_left(), 1001), (dir.turn_right(), 1001)].into_iter()
+}
+
+fn predecessor_moves(curr: &Direction) -> impl Iterator<Item = (Direction, u64)> {
+    [
+        (*curr, 1),
+        (curr.turn_left(), 1001),
+        (curr.turn_right(), 1001),
+    ]
+    .into_iter()
 }
 
 fn step(row: usize, col: usize, dir: &Direction, grid: &Grid) -> Option<(usize, usize)> {
@@ -235,5 +317,19 @@ mod day16 {
         let grid = parse_day16(&get_example2());
         let score = get_score_day16_stage1(&grid);
         assert_eq!(score, 11048);
+    }
+
+    #[test]
+    fn seats_example1_stage2() {
+        let grid = parse_day16(&get_example1());
+        let seats = get_seats_day16_stage2(&grid);
+        assert_eq!(seats, 45);
+    }
+
+    #[test]
+    fn seats_example2_stage2() {
+        let grid = parse_day16(&get_example2());
+        let seats = get_seats_day16_stage2(&grid);
+        assert_eq!(seats, 64);
     }
 }

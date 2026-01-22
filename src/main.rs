@@ -17,7 +17,7 @@ use crate::{
     day13::{get_result_day13_stage1, get_result_day13_stage2, parse_day13},
     day14::{get_result_day14_stage1, get_result_day14_stage2, parse_day14},
     day15::parse_day15,
-    day16::{get_score_day16_stage1, parse_day16},
+    day16::{get_score_day16_stage1, get_seats_day16_stage2, parse_day16},
 };
 
 pub mod day1;
@@ -207,6 +207,8 @@ fn run_day16() {
     let grid = parse_day16(&get_lines(Path::new("input/day16_input.txt")));
     let points = get_score_day16_stage1(&grid);
     println!("Result day 16 (stage 1): {points}");
+    let seats = get_seats_day16_stage2(&grid);
+    println!("Result day 16 (stage 2): {seats}");
 }
 
 fn main() {
