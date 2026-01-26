@@ -21,6 +21,7 @@ use crate::{
     day15::parse_day15,
     day16::{get_score_day16_stage1, get_seats_day16_stage2, parse_day16},
     day17::{get_register_a_day17_stage2, parse_day17, run_program_day17_stage1},
+    day18::{find_breaking_byte_day18_stage2, parse_day18, shortest_path_day18_stage1},
 };
 
 pub mod day1;
@@ -32,6 +33,7 @@ pub mod day14;
 pub mod day15;
 pub mod day16;
 pub mod day17;
+pub mod day18;
 pub mod day2;
 pub mod day3;
 pub mod day4;
@@ -227,9 +229,27 @@ fn run_day17() {
         output,
         program.program.iter().map(|v| v.to_string()).join(",")
     );
-    println!("Result da 17 (stage 2): {reg_a}");
+    println!("Result day 17 (stage 2): {reg_a}");
+}
+
+fn run_day18() {
+    let all_walls = parse_day18(&get_lines(Path::new("input/day18_input.txt")));
+    let walls_stage_1 = &all_walls[..1024];
+    let grid_size = 70;
+
+    let result = shortest_path_day18_stage1(grid_size, walls_stage_1);
+    match result {
+        Some(res) => println!("Result day 18 (stage 1): {res}"),
+        None => println!("NO SOLUTION FOUND"),
+    }
+
+    let blocking_tile = find_breaking_byte_day18_stage2(grid_size, &all_walls);
+    println!(
+        "Result day 18 (stage 2): {},{}",
+        blocking_tile.0, blocking_tile.1
+    );
 }
 
 fn main() {
-    run_day17();
+    run_day18();
 }
