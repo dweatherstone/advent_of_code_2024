@@ -2,6 +2,8 @@
 
 use std::{fs::read_to_string, path::Path};
 
+use itertools::Itertools;
+
 use crate::{
     day1::{parse_day1, sum_of_differences, sum_of_similarity_score},
     day2::{parse_day2, safe_qty},
@@ -18,7 +20,7 @@ use crate::{
     day14::{get_result_day14_stage1, get_result_day14_stage2, parse_day14},
     day15::parse_day15,
     day16::{get_score_day16_stage1, get_seats_day16_stage2, parse_day16},
-    day17::{parse_day17, run_program_day17_stage1},
+    day17::{get_register_a_day17_stage2, parse_day17, run_program_day17_stage1},
 };
 
 pub mod day1;
@@ -217,6 +219,15 @@ fn run_day17() {
     let mut program = parse_day17(&get_lines(Path::new("input/day17_input.txt")));
     let output = run_program_day17_stage1(&mut program);
     println!("Result day 17 (stage 1): {output}");
+    program = parse_day17(&get_lines(Path::new("input/day17_input.txt")));
+    let reg_a = get_register_a_day17_stage2(&program);
+    program.register_a = reg_a;
+    let output = run_program_day17_stage1(&mut program);
+    assert_eq!(
+        output,
+        program.program.iter().map(|v| v.to_string()).join(",")
+    );
+    println!("Result da 17 (stage 2): {reg_a}");
 }
 
 fn main() {
