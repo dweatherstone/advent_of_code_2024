@@ -22,6 +22,7 @@ use crate::{
     day16::{get_score_day16_stage1, get_seats_day16_stage2, parse_day16},
     day17::{get_register_a_day17_stage2, parse_day17, run_program_day17_stage1},
     day18::{find_breaking_byte_day18_stage2, parse_day18, shortest_path_day18_stage1},
+    day19::{get_result_day19_stage1, get_result_day19_stage2, parse_day19},
 };
 
 pub mod day1;
@@ -34,6 +35,7 @@ pub mod day15;
 pub mod day16;
 pub mod day17;
 pub mod day18;
+pub mod day19;
 pub mod day2;
 pub mod day3;
 pub mod day4;
@@ -250,6 +252,14 @@ fn run_day18() {
     );
 }
 
+fn run_day19() {
+    let layout = parse_day19(&get_lines(Path::new("input/day19_input.txt")));
+    let result = get_result_day19_stage1(&layout);
+    println!("Result day 19 (stage 1): {result}");
+    let result = get_result_day19_stage2(&layout);
+    println!("Result day 19 (stage 2): {result}");
+}
+
 fn main() {
-    run_day18();
+    run_day19();
 }
