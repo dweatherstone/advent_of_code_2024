@@ -24,6 +24,7 @@ use crate::{
     day18::{find_breaking_byte_day18_stage2, parse_day18, shortest_path_day18_stage1},
     day19::{get_result_day19_stage1, get_result_day19_stage2, parse_day19},
     day20::{day20_stage1_result, day20_stage2_result, parse_day20},
+    day21::{parse_day21, result_stage1_day21, result_stage2_day21},
 };
 
 pub mod day1;
@@ -39,6 +40,7 @@ pub mod day18;
 pub mod day19;
 pub mod day2;
 pub mod day20;
+pub mod day21;
 pub mod day3;
 pub mod day4;
 pub mod day5;
@@ -270,6 +272,14 @@ fn run_day20() {
     println!("Result day 20 (stage 2): {result2}");
 }
 
+fn run_day21() {
+    let mut kc = parse_day21(&get_lines(Path::new("input/day21_input.txt")));
+    let result1 = result_stage1_day21(&mut kc);
+    println!("Result day 21 (stage 1): {result1}");
+    let result2 = result_stage2_day21(&mut kc);
+    println!("Result day 21 (stage 2): {result2}");
+}
+
 fn main() {
-    run_day20();
+    run_day21();
 }
