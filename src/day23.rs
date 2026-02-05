@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
 pub struct Network {
+    // Mapping of the id to the original name.
+    id_to_name: Vec<String>,
     // connected[a][b] is true if a and b are connected
     connected: Vec<Vec<bool>>,
     // neighbours[a] = [b, c, d]
@@ -11,6 +13,7 @@ pub struct Network {
 
 pub fn parse_day23(lines: &[String]) -> Network {
     let mut name_to_id = HashMap::new();
+    let mut id_to_name = Vec::new();
     let mut is_t_computer = Vec::new();
     let mut connections = Vec::new();
 
@@ -24,6 +27,7 @@ pub fn parse_day23(lines: &[String]) -> Network {
                 id
             } else {
                 let id = name_to_id.len();
+                id_to_name.push(name.to_string());
                 name_to_id.insert(name.to_string(), id);
                 is_t_computer.push(name.starts_with('t'));
                 id
@@ -47,6 +51,7 @@ pub fn parse_day23(lines: &[String]) -> Network {
     }
 
     Network {
+        id_to_name,
         connected,
         neighbours,
         is_t_computer,
@@ -78,7 +83,58 @@ pub fn result_day23_stage1(lan: &Network) -> usize {
 }
 
 pub fn result_day23_stage2(lan: &Network) -> String {
-    todo!()
+    let mut max_clique: Vec<usize> = Vec::new();
+    for cur in 0..lan.neighbours.len() {
+        let current_clique = vec![cur];
+        let candidates = lan.neighbours[cur].clone();
+        find_clique(current_clique, candidates, lan, &mut max_clique);
+    }
+
+    let mut names = max_clique
+        .iter()
+        .map(|&idx| lan.id_to_name[idx].clone())
+        .collect::<Vec<_>>();
+    names.sort_unstable();
+
+    names.join(",")
+}
+
+fn find_clique(
+    current_clique: Vec<usize>,
+    candidates: Vec<usize>,
+    network: &Network,
+    max_clique: &mut Vec<usize>,
+) {
+    if candidates.is_empty() {
+        if current_clique.len() > max_clique.len() {
+            *max_clique = current_clique;
+        }
+        return;
+    }
+
+    // Optimization: if it's impossible to beat the current max, stop
+    if current_clique.len() + candidates.len() <= max_clique.len() {
+        return;
+    }
+
+    let mut remaining_candidates = candidates.clone();
+    for &node in &candidates {
+        // Create a new clique with this node
+        let mut next_clique = current_clique.clone();
+        next_clique.push(node);
+
+        // New candidates must be neighnours of the node we just added
+        let next_candidates: Vec<usize> = remaining_candidates
+            .iter()
+            .filter(|&&c| c != node && network.connected[node][c])
+            .copied()
+            .collect();
+
+        find_clique(next_clique, next_candidates, network, max_clique);
+
+        // Remove node from candidates so we don't process the same clique twice
+        remaining_candidates.retain(|&c| c != node);
+    }
 }
 
 #[cfg(test)]
@@ -126,6 +182,7 @@ mod day23 {
     fn day23_parse() {
         let example = get_example();
         let lan = parse_day23(&example);
+        assert_eq!(lan.id_to_name.len(), 16);
         let connected_qty: u32 = lan
             .connected
             .iter()

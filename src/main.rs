@@ -26,7 +26,7 @@ use crate::{
     day20::{day20_stage1_result, day20_stage2_result, parse_day20},
     day21::{parse_day21, result_stage1_day21, result_stage2_day21},
     day22::{parse_day22, result_stage1_day22, result_stage2_day22},
-    day23::{parse_day23, result_day23_stage1},
+    day23::{parse_day23, result_day23_stage1, result_day23_stage2},
 };
 
 pub mod day1;
@@ -296,6 +296,8 @@ fn run_day23() {
     let lan = parse_day23(&get_lines(Path::new("input/day23_input.txt")));
     let result1 = result_day23_stage1(&lan);
     println!("Result day 23 (stage 1): {result1}");
+    let result2 = result_day23_stage2(&lan);
+    println!("Result day 23 (stage 2): {result2}")
 }
 
 fn main() {
