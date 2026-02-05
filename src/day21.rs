@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use itertools::Itertools;
-
 pub struct KeypadComundrum {
     codes: Vec<String>,
     keypads: Vec<KeypadType>,
