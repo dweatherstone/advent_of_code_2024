@@ -27,6 +27,7 @@ use crate::{
     day21::{parse_day21, result_stage1_day21, result_stage2_day21},
     day22::{parse_day22, result_stage1_day22, result_stage2_day22},
     day23::{parse_day23, result_day23_stage1, result_day23_stage2},
+    day24::{parse_day24, result_day24_stage1},
 };
 
 pub mod day1;
@@ -45,6 +46,7 @@ pub mod day20;
 pub mod day21;
 pub mod day22;
 pub mod day23;
+pub mod day24;
 pub mod day3;
 pub mod day4;
 pub mod day5;
@@ -300,6 +302,12 @@ fn run_day23() {
     println!("Result day 23 (stage 2): {result2}")
 }
 
+fn run_day24() {
+    let mut device = parse_day24(&get_lines(Path::new("input/day24_input.txt")));
+    let result1 = result_day24_stage1(&mut device);
+    println!("Result day 24 (stage 1): {result1}");
+}
+
 fn main() {
-    run_day23();
+    run_day24();
 }
