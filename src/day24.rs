@@ -4,16 +4,16 @@ use std::{
 };
 
 pub struct Device {
-    wires: HashMap<String, bool>,
+    wires: HashMap<String, bool>, // wire label -> current value
     gates: Vec<Gate>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 struct Gate {
+    input1: String, // wire label
+    input2: String, // wire label
+    output: String, // wire label
     gate_type: GateType,
-    input1: String,
-    input2: String,
-    output: String,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -24,19 +24,19 @@ enum GateType {
 }
 
 impl GateType {
-    fn process(&self, input1: bool, input2: bool) -> bool {
+    fn process(&self, a: bool, b: bool) -> bool {
         match self {
-            GateType::And => input1 & input2,
-            GateType::Or => input1 | input2,
-            GateType::Xor => input1 ^ input2,
+            GateType::And => a && b,
+            GateType::Or => a || b,
+            GateType::Xor => a ^ b,
         }
     }
 }
 
 impl FromStr for GateType {
     type Err = ();
-    fn from_str(value: &str) -> Result<Self, Self::Err> {
-        match value {
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        match input {
             "AND" => Ok(GateType::And),
             "OR" => Ok(GateType::Or),
             "XOR" => Ok(GateType::Xor),
@@ -71,7 +71,6 @@ pub fn parse_day24(lines: &[String]) -> Device {
             });
         }
     }
-
     Device { wires, gates }
 }
 
@@ -189,30 +188,30 @@ mod day24 {
     fn small_example_parse() {
         let device = parse_day24(&get_small_example());
         let mut expected_wires = HashMap::new();
-        expected_wires.insert("x00".to_string(), true);
-        expected_wires.insert("x01".to_string(), true);
-        expected_wires.insert("x02".to_string(), true);
-        expected_wires.insert("y00".to_string(), false);
-        expected_wires.insert("y01".to_string(), true);
-        expected_wires.insert("y02".to_string(), false);
+        expected_wires.insert(String::from("x00"), true);
+        expected_wires.insert(String::from("x01"), true);
+        expected_wires.insert(String::from("x02"), true);
+        expected_wires.insert(String::from("y00"), false);
+        expected_wires.insert(String::from("y01"), true);
+        expected_wires.insert(String::from("y02"), false);
         let expected_gates = vec![
             Gate {
+                input1: String::from("x00"),
+                input2: String::from("y00"),
+                output: String::from("z00"),
                 gate_type: GateType::And,
-                input1: "x00".to_string(),
-                input2: "y00".to_string(),
-                output: "z00".to_string(),
             },
             Gate {
+                input1: String::from("x01"),
+                input2: String::from("y01"),
+                output: String::from("z01"),
                 gate_type: GateType::Xor,
-                input1: "x01".to_string(),
-                input2: "y01".to_string(),
-                output: "z01".to_string(),
             },
             Gate {
+                input1: String::from("x02"),
+                input2: String::from("y02"),
+                output: String::from("z02"),
                 gate_type: GateType::Or,
-                input1: "x02".to_string(),
-                input2: "y02".to_string(),
-                output: "z02".to_string(),
             },
         ];
         assert_eq!(device.wires, expected_wires);
