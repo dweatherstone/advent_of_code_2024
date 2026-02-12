@@ -28,6 +28,7 @@ use crate::{
     day22::{parse_day22, result_stage1_day22, result_stage2_day22},
     day23::{parse_day23, result_day23_stage1, result_day23_stage2},
     day24::{parse_day24, result_day24_stage1, result_day24_stage2},
+    day25::{parse_day25, result_day25_stage1},
 };
 
 pub mod day1;
@@ -47,6 +48,7 @@ pub mod day21;
 pub mod day22;
 pub mod day23;
 pub mod day24;
+pub mod day25;
 pub mod day3;
 pub mod day4;
 pub mod day5;
@@ -310,6 +312,12 @@ fn run_day24() {
     println!("\nResult day 24 (stage 2): {result2}");
 }
 
+fn run_day25() {
+    let (keys, locks) = parse_day25(&get_lines(Path::new("input/day25_input.txt")));
+    let result1 = result_day25_stage1(&keys, &locks);
+    println!("Result day 25 (stage 1): {result1}");
+}
+
 fn main() {
-    run_day24();
+    run_day25();
 }
