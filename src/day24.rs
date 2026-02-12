@@ -87,6 +87,8 @@ pub fn result_day24_stage1(device: &mut Device) -> u64 {
     let mut queue: VecDeque<Gate> = device.gates.iter().cloned().collect();
     while let Some(gate) = queue.pop_front() {
         if device.wires.contains_key(&gate.input1) && device.wires.contains_key(&gate.input2) {
+            // Both input wires have values, so this gate can be processed,
+            // and the output value put into device.wires
             let value1 = *device.wires.get(&gate.input1).unwrap();
             let value2 = *device.wires.get(&gate.input2).unwrap();
             device
@@ -130,233 +132,161 @@ fn wires_to_decimal(device: &Device, prefix: char) -> u64 {
 // E.g. I figured out that the OR gate can't ever have an xNN, yNN,
 // or zNN connection, unless it's the last bit.
 pub fn result_day24_stage2(device: &Device) -> String {
-    let input_map = build_input_map(device);
-    for n in 0..45 {
-        find_nth_bit_adder(n, &input_map);
-        println!();
-    }
+    let input_map: HashMap<String, Vec<Gate>> = device
+        .wires
+        .keys()
+        .map(|wire| {
+            let gates_in = device
+                .gates
+                .iter()
+                .filter_map(|gate| {
+                    if &gate.input1 == wire || &gate.input2 == wire {
+                        Some(gate.clone())
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<Gate>>();
+            (wire.to_string(), gates_in)
+        })
+        .collect();
+    // for n in 0..45 {
+    //     find_nth_bit_adder(n, &input_map);
+    //     println!();
+    // }
 
     let mut bad_wires: HashSet<String> = HashSet::new();
-    let bad = or_gates_no_xyz(&device.gates);
-    println!("CHECK: OR gates can't have xyz wires in or out: {:?}", bad);
-    bad_wires.extend(bad);
-
-    let bad = and_gate_no_xyz_output(&device.gates);
-    println!("CHECK: AND gates can't have xyz outputs: {:?}", bad);
-    bad_wires.extend(bad);
-
-    let bad = and_xor_gates_both_xyz_or_none(&device.gates);
-    println!(
-        "CHECK: AND/XOR gate inputs are both or neither xyz: {:?}",
-        bad
-    );
-    bad_wires.extend(bad);
-
-    let bad = and_output_is_or_input(&device.gates, &input_map);
-    println!("CHECK: AND outputs are followed by a single OR: {:?}", bad);
-    bad_wires.extend(bad);
-
-    let bad = or_output_goes_in_one_and_one_xor(&device.gates, &input_map);
-    println!(
-        "CHECK: OR outputs go in exactly one AND & one XOR: {:?}",
-        bad
-    );
-    bad_wires.extend(bad);
-
-    let bad = xor_output_non_z_goes_in_one_and_one_xor(&device.gates, &input_map);
-    println!(
-        "CHECK: Non-z XOR outputs go in exactly one AND & one XOR: {:?}",
-        bad
-    );
-    bad_wires.extend(bad);
-
-    let bad = xor_with_non_xy_in_has_z_out(&device.gates);
-    println!("CHECK: XOR with non-xy inputs has z output: {:?}", bad);
-    bad_wires.extend(bad);
+    for gate in device.gates.iter() {
+        let next_gates = input_map.get(&gate.output).unwrap();
+        if gate.gate_type == GateType::Or {
+            // or_gates_no_xyz
+            if is_xyz(&gate.input1) {
+                bad_wires.insert(gate.input1.clone());
+                println!(
+                    "CHECK: OR gate can't have xyz wires input1: {}",
+                    gate.input1
+                );
+            }
+            if is_xyz(&gate.input2) {
+                bad_wires.insert(gate.input2.clone());
+                println!(
+                    "CHECK: OR gate can't have xyz wires input2: {}",
+                    gate.input2
+                );
+            }
+            if is_xyz(&gate.output) && gate.output != "z45" {
+                bad_wires.insert(gate.output.clone());
+                println!(
+                    "CHECK: OR gate can't have xyz wires output: {}",
+                    gate.output
+                );
+            }
+            // or_output_goes_in_one_and_one_xor
+            if gate.output != "z45"
+                && (next_gates.len() != 2
+                    || !((next_gates[0].gate_type == GateType::And
+                        && next_gates[1].gate_type == GateType::Xor)
+                        || (next_gates[0].gate_type == GateType::Xor
+                            && next_gates[1].gate_type == GateType::And)))
+            {
+                bad_wires.insert(gate.output.clone());
+                println!(
+                    "CHECK: OR outputs go in exactly one AND & one XOR: {}",
+                    gate.output
+                );
+            }
+        }
+        if gate.gate_type == GateType::And {
+            // and_gate_no_xyz_output
+            if is_xyz(&gate.output) {
+                bad_wires.insert(gate.output.clone());
+                println!("CHECK: And gate can't have xyz output: {}", gate.output);
+            }
+            // and_output_is_or_input
+            if !((gate.input1 == "x00" && gate.input2 == "y00")
+                || (gate.input1 == "y00" && gate.input2 == "x00"))
+                && (next_gates.len() != 1 || next_gates[0].gate_type != GateType::Or)
+            {
+                bad_wires.insert(gate.output.clone());
+                println!(
+                    "CHECK: AND outputs are followed by a single OR: {}",
+                    gate.output
+                );
+            }
+        }
+        if gate.gate_type == GateType::Xor {
+            // xor_output_non_z_goes_in_one_and_one_xor
+            if !gate.output.starts_with("z")
+                && (next_gates.len() != 2
+                    || !((next_gates[0].gate_type == GateType::And
+                        && next_gates[1].gate_type == GateType::Xor)
+                        || (next_gates[0].gate_type == GateType::Xor
+                            && next_gates[1].gate_type == GateType::And)))
+            {
+                bad_wires.insert(gate.output.clone());
+                println!(
+                    "CHECK: Non-z XOR outputs go in exactly one AND & one XOR: {}",
+                    gate.output
+                );
+            }
+            // xor_with_non_xy_in_has_z_out
+            if !(gate.output.starts_with("z") || is_xyz(&gate.input1) && is_xyz(&gate.input2)) {
+                // !(is_xyz(&gate.input1) && is_xyz(&gate.input2)) && !gate.output.starts_with("z") {
+                bad_wires.insert(gate.output.clone());
+                println!(
+                    "CHECK: XOR with non-xy inputs has z output: {}",
+                    gate.output
+                );
+            }
+        }
+        // and_xor_gates_both_xyz_or_none
+        if [GateType::And, GateType::Xor].contains(&gate.gate_type)
+            && ((is_xyz(&gate.input1) && !is_xyz(&gate.input2))
+                || (!is_xyz(&gate.input1) && is_xyz(&gate.input2)))
+        {
+            bad_wires.insert(gate.input1.clone());
+            bad_wires.insert(gate.input2.clone());
+            println!(
+                "CHECK: AND/XOR gate inputs are both or neither xyz: {}, {}",
+                gate.input1, gate.input2
+            );
+        }
+    }
 
     let mut sorted: Vec<String> = bad_wires.into_iter().collect();
     sorted.sort();
     sorted.join(",")
 }
 
-fn build_input_map(device: &Device) -> HashMap<String, Vec<Gate>> {
-    let mut map = HashMap::new();
-    for wire in device.wires.keys() {
-        let mut gates_in = Vec::new();
-        for gate in device.gates.iter() {
-            if &gate.input1 == wire || &gate.input2 == wire {
-                gates_in.push(gate.clone());
-            }
-        }
-        map.insert(wire.to_string(), gates_in);
-    }
-    map
-}
+// fn find_nth_bit_adder(n: usize, input_map: &HashMap<String, Vec<Gate>>) {
+//     let x_name = format!("x{:02}", n);
+//     let y_name = format!("y{:02}", n);
 
-fn find_nth_bit_adder(n: usize, input_map: &HashMap<String, Vec<Gate>>) {
-    let x_name = format!("x{:02}", n);
-    let y_name = format!("y{:02}", n);
+//     let mut gates: HashSet<Gate> = HashSet::new();
+//     for gate in input_map.get(&x_name).unwrap() {
+//         gates.insert(gate.clone());
+//     }
+//     for gate in input_map.get(&y_name).unwrap() {
+//         gates.insert(gate.clone());
+//     }
+//     let mut next_gates: HashSet<Gate> = HashSet::new();
+//     for gate in &gates {
+//         if !gate.output.starts_with("z") {
+//             for next_gate in input_map.get(&gate.output).unwrap() {
+//                 next_gates.insert(next_gate.clone());
+//             }
+//         }
+//     }
+//     gates.extend(next_gates);
 
-    let mut gates: HashSet<Gate> = HashSet::new();
-    for gate in input_map.get(&x_name).unwrap() {
-        gates.insert(gate.clone());
-    }
-    for gate in input_map.get(&y_name).unwrap() {
-        gates.insert(gate.clone());
-    }
-    let mut next_gates: HashSet<Gate> = HashSet::new();
-    for gate in &gates {
-        if !gate.output.starts_with("z") {
-            for next_gate in input_map.get(&gate.output).unwrap() {
-                next_gates.insert(next_gate.clone());
-            }
-        }
-    }
-    gates.extend(next_gates);
-
-    for gate in gates {
-        gate.print();
-        println!(" is part of bit {}", n);
-    }
-}
+//     for gate in gates {
+//         gate.print();
+//         println!(" is part of bit {}", n);
+//     }
+// }
 
 fn is_xyz(wire: &str) -> bool {
     wire.starts_with("x") || wire.starts_with("y") || wire.starts_with("z")
-}
-
-fn or_gates_no_xyz(gates: &Vec<Gate>) -> Vec<String> {
-    let mut bad_wires = Vec::new();
-    for gate in gates {
-        if gate.gate_type != GateType::Or {
-            continue;
-        }
-        if is_xyz(&gate.input1) {
-            bad_wires.push(gate.input1.clone());
-        }
-        if is_xyz(&gate.input2) {
-            bad_wires.push(gate.input2.clone());
-        }
-        if is_xyz(&gate.output) && gate.output != "z45" {
-            bad_wires.push(gate.output.clone());
-        }
-    }
-    bad_wires
-}
-
-fn and_gate_no_xyz_output(gates: &Vec<Gate>) -> Vec<String> {
-    let mut bad_wires = Vec::new();
-    for gate in gates {
-        if gate.gate_type != GateType::And {
-            continue;
-        }
-        if is_xyz(&gate.output) {
-            bad_wires.push(gate.output.clone());
-        }
-    }
-    bad_wires
-}
-
-fn and_xor_gates_both_xyz_or_none(gates: &Vec<Gate>) -> Vec<String> {
-    let mut bad_wires = Vec::new();
-    for gate in gates {
-        if ![GateType::And, GateType::Xor].contains(&gate.gate_type) {
-            continue;
-        }
-        if (is_xyz(&gate.input1) && !is_xyz(&gate.input2))
-            || (!is_xyz(&gate.input1) && is_xyz(&gate.input2))
-        {
-            bad_wires.push(gate.input1.clone());
-            bad_wires.push(gate.input2.clone());
-        }
-    }
-    bad_wires
-}
-
-fn and_output_is_or_input(
-    gates: &Vec<Gate>,
-    input_map: &HashMap<String, Vec<Gate>>,
-) -> Vec<String> {
-    let mut bad_wires = Vec::new();
-    for gate in gates {
-        let inputs = (&gate.input1, &gate.input2);
-        if gate.gate_type != GateType::And
-        // the output of the 0th bit doesn't fulfil this condition
-        || inputs == (&String::from("x00"), &String::from("y00"))
-        || inputs == (&String::from("y00"), &String::from("x00"))
-        {
-            continue;
-        }
-        let next_gates = input_map.get(&gate.output).unwrap();
-        if next_gates.len() != 1 {
-            bad_wires.push(gate.output.clone());
-            continue;
-        }
-        if next_gates[0].gate_type != GateType::Or {
-            bad_wires.push(gate.output.clone());
-        }
-    }
-    bad_wires
-}
-
-fn or_output_goes_in_one_and_one_xor(
-    gates: &Vec<Gate>,
-    input_map: &HashMap<String, Vec<Gate>>,
-) -> Vec<String> {
-    let mut bad_wires = Vec::new();
-    for gate in gates {
-        if gate.gate_type != GateType::Or || gate.output == "z45" {
-            continue;
-        }
-        let next_gates = input_map.get(&gate.output).unwrap();
-        if next_gates.len() != 2 {
-            bad_wires.push(gate.output.clone());
-            continue;
-        }
-        if !((next_gates[0].gate_type == GateType::And && next_gates[1].gate_type == GateType::Xor)
-            || (next_gates[0].gate_type == GateType::Xor
-                && next_gates[1].gate_type == GateType::And))
-        {
-            bad_wires.push(gate.output.clone());
-        }
-    }
-    bad_wires
-}
-
-fn xor_output_non_z_goes_in_one_and_one_xor(
-    gates: &Vec<Gate>,
-    input_map: &HashMap<String, Vec<Gate>>,
-) -> Vec<String> {
-    let mut bad_wires = Vec::new();
-    for gate in gates {
-        if gate.gate_type != GateType::Xor || gate.output.starts_with("z") {
-            continue;
-        }
-        let next_gates = input_map.get(&gate.output).unwrap();
-        if next_gates.len() != 2 {
-            bad_wires.push(gate.output.clone());
-            continue;
-        }
-        if !((next_gates[0].gate_type == GateType::And && next_gates[1].gate_type == GateType::Xor)
-            || (next_gates[0].gate_type == GateType::Xor
-                && next_gates[1].gate_type == GateType::And))
-        {
-            bad_wires.push(gate.output.clone());
-        }
-    }
-    bad_wires
-}
-
-fn xor_with_non_xy_in_has_z_out(gates: &Vec<Gate>) -> Vec<String> {
-    let mut bad_wires = Vec::new();
-    for gate in gates {
-        if gate.gate_type != GateType::Xor || is_xyz(&gate.input1) || is_xyz(&gate.input2) {
-            continue;
-        }
-        if !gate.output.starts_with("z") {
-            bad_wires.push(gate.output.clone());
-        }
-    }
-    bad_wires
 }
 
 #[cfg(test)]
